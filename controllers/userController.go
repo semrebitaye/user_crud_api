@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"user_crud_api/models"
+
+	"github.com/gorilla/mux"
 )
 
 func GetUsers(db *sql.DB) http.HandlerFunc {
@@ -29,5 +31,19 @@ func GetUsers(db *sql.DB) http.HandlerFunc {
 		}
 
 		json.NewEncoder(w).Encode(users)
+	}
+}
+
+func DeleteUser(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id := vars["id"]
+
+		_, err := db.Exec("DELETE FROM users WHERE id = $1", id)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		json.NewEncoder(w).Encode("User Deleted")
 	}
 }
