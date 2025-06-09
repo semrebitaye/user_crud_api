@@ -6,6 +6,7 @@ toolchain go1.23.10
 
 require (
 	github.com/go-pg/pg v8.0.7+incompatible
+	github.com/gorilla/mux v1.8.1
 	github.com/joho/godotenv v1.5.1
 )
 
