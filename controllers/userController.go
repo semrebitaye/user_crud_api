@@ -16,7 +16,8 @@ func DeleteUser(db *sql.DB) http.HandlerFunc {
 
 		_, err := db.Exec("DELETE FROM users WHERE id = $1", id)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
 		}
 
 		json.NewEncoder(w).Encode("User Deleted")
