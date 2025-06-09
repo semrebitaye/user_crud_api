@@ -18,10 +18,14 @@ func main() {
 
 	r := mux.NewRouter()
 <<<<<<< HEAD
+<<<<<<< HEAD
 	r.HandleFunc("/get", controllers.GetUsers(db)).Methods("GET")
 =======
 	r.HandleFunc("/delete/{id}", controllers.DeleteUser(db)).Methods("DELETE")
 >>>>>>> 2176df6 (delete user function added)
+=======
+	r.HandleFunc(":/8080", controllers.CreateUser(db))
+>>>>>>> 7a7112f (Create User function added)
 
 	// user := &models.User{ID: 1, FirstName: "man", LastName: "manega", Email: "man@man", Password: "manegaga"}
 	// fmt.Println(user)
