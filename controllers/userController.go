@@ -10,6 +10,20 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func CreateUser(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var u models.User
+		json.NewDecoder(r.Body).Decode(&u)
+
+		err := db.QueryRow("INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2) RETURNING id", u.FirstName, u.LastName, u.Email, u.Password).Scan(&u.ID)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+		}
+
+		json.NewEncoder(w).Encode(u)
+	}
+}
+
 func GetUsers(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rows, err := db.Query("SELECT * FROM users")
@@ -51,6 +65,23 @@ func GetUserById(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+func UpdateUser(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var u models.User
+		json.NewDecoder(r.Body).Decode(&u)
+
+		vars := mux.Vars(r)
+		id := vars["id"]
+
+		_, err := db.Exec("UPDATE users SET name = $1, EMAIL = $2 WHERE id = $3", u.FirstName, u.LastName, u.Email, id, u.Password)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		json.NewEncoder(w).Encode(u)
+	}
+}
+
 func DeleteUser(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -62,19 +93,5 @@ func DeleteUser(db *sql.DB) http.HandlerFunc {
 		}
 
 		json.NewEncoder(w).Encode("User Deleted")
-	}
-}
-
-func CreateUser(db *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var u models.User
-		json.NewDecoder(r.Body).Decode(&u)
-
-		err := db.QueryRow("INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2) RETURNING id", u.FirstName, u.LastName, u.Email, u.Password).Scan(&u.ID)
-		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-		}
-
-		json.NewEncoder(w).Encode(u)
 	}
 }
