@@ -1,12 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	initializer "user_crud_api/initializers"
 
 	"github.com/gorilla/mux"
 )
+
+var db *sql.DB
 
 func main() {
 	initializer.LoadEnvVariable()
