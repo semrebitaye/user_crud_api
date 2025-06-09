@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"user_crud_api/controllers"
 	initializer "user_crud_api/initializers"
 
 	"github.com/gorilla/mux"
@@ -16,6 +17,7 @@ func main() {
 	initializer.Connect()
 
 	r := mux.NewRouter()
+	r.HandleFunc("/update/{id}", controllers.UpdateUser(db)).Methods("PUT")
 
 	// user := &models.User{ID: 1, FirstName: "man", LastName: "manega", Email: "man@man", Password: "manegaga"}
 	// fmt.Println(user)
