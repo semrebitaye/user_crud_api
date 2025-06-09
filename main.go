@@ -18,7 +18,7 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/update/{id}", controllers.UpdateUser(db)).Methods("PUT")
+	// r.HandleFunc("/update/{id}", controllers.UpdateUser(db)).Methods("PUT")
 	r.HandleFunc("/delete/{id}", controllers.DeleteUser(db)).Methods("DELETE")
 
 	// user := &models.User{ID: 1, FirstName: "man", LastName: "manega", Email: "man@man", Password: "manegaga"}
