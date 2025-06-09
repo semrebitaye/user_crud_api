@@ -3,7 +3,6 @@ package controllers
 import (
 	"database/sql"
 	"encoding/json"
-
 	"log"
 	"net/http"
 	"user_crud_api/models"
@@ -32,6 +31,23 @@ func GetUsers(db *sql.DB) http.HandlerFunc {
 		}
 
 		json.NewEncoder(w).Encode(users)
+	}
+}
+
+func GetUserById(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id := vars["id"]
+
+		var u models.User
+		err := db.QueryRow("SELECT * FROm users WHERE id = $1", id).Scan(&u.ID, &u.FirstName, &u.LastName, &u.Email, &u.Password)
+
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		json.NewEncoder(w).Encode(u)
 	}
 }
 
