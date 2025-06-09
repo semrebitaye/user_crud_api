@@ -18,6 +18,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc(":/create", controllers.CreateUser(db)).Methods("POST")
+	r.HandleFunc("/get", controllers.GetUsers(db)).Methods("GET")
 
 	// user := &models.User{ID: 1, FirstName: "man", LastName: "manega", Email: "man@man", Password: "manegaga"}
 	// fmt.Println(user)
