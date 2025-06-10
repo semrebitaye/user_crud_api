@@ -1,18 +1,22 @@
 package initializer
 
 import (
-	"database/sql"
+	"context"
 	"log"
 	"os"
 
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v5"
 )
 
-func Connect() *sql.DB {
-	connStr := os.Getenv("DATABASE_URL")
-	db, err := sql.Open("postgres", connStr)
+func Connect() *pgx.Conn {
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("DATABASE_URL environment variable is not set")
+	}
+
+	db, err := pgx.Connect(context.Background(), dsn)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
 	log.Println("Connected successfully")
 	return db

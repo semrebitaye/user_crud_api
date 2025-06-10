@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"user_crud_api/controllers"
@@ -14,8 +15,8 @@ import (
 
 func main() {
 	initializer.LoadEnvVariable()
-	var db = initializer.Connect()
-	defer db.Close()
+	db := initializer.Connect()
+	defer db.Close(context.Background())
 
 	r := mux.NewRouter()
 	r.HandleFunc("/users", controllers.CreateUser(db)).Methods("POST")

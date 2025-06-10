@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"database/sql"
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -11,10 +11,11 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func CreateUser(db *sql.DB) http.HandlerFunc {
+func CreateUser(db *pgx.Conn) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var u models.User
 		err := json.NewDecoder(r.Body).Decode(&u)
@@ -26,7 +27,7 @@ func CreateUser(db *sql.DB) http.HandlerFunc {
 			w.WriteHeader(http.StatusNotFound)
 		}
 
-		err = db.QueryRow("INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id", u.FirstName, u.LastName, u.Email, string(hash)).Scan(&u.ID)
+		err = db.QueryRow(context.Background(), "INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id", u.FirstName, u.LastName, u.Email, string(hash)).Scan(&u.ID)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -35,9 +36,9 @@ func CreateUser(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func GetUsers(db *sql.DB) http.HandlerFunc {
+func GetUsers(db *pgx.Conn) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rows, err := db.Query("SELECT * FROM users")
+		rows, err := db.Query(context.Background(), "SELECT * FROM users")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -59,13 +60,13 @@ func GetUsers(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func GetUserById(db *sql.DB) http.HandlerFunc {
+func GetUserById(db *pgx.Conn) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]
 
 		var u models.User
-		err := db.QueryRow("SELECT * FROm users WHERE id = $1", id).Scan(&u.ID, &u.FirstName, &u.LastName, &u.Email, &u.Password)
+		err := db.QueryRow(context.Background(), "SELECT * FROm users WHERE id = $1", id).Scan(&u.ID, &u.FirstName, &u.LastName, &u.Email, &u.Password)
 
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
@@ -76,7 +77,7 @@ func GetUserById(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func UpdateUser(db *sql.DB) http.HandlerFunc {
+func UpdateUser(db *pgx.Conn) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var u models.User
 		json.NewDecoder(r.Body).Decode(&u)
@@ -84,7 +85,7 @@ func UpdateUser(db *sql.DB) http.HandlerFunc {
 		vars := mux.Vars(r)
 		id := vars["id"]
 
-		_, err := db.Exec("UPDATE users SET name = $1, EMAIL = $2 WHERE id = $3", u.FirstName, u.LastName, u.Email, id, u.Password)
+		_, err := db.Exec(context.Background(), "UPDATE users SET name = $1, EMAIL = $2 WHERE id = $3", u.FirstName, u.LastName, u.Email, id, u.Password)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -93,12 +94,12 @@ func UpdateUser(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func DeleteUser(db *sql.DB) http.HandlerFunc {
+func DeleteUser(db *pgx.Conn) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]
 
-		_, err := db.Exec("DELETE FROM users WHERE id = $1", id)
+		_, err := db.Exec(context.Background(), "DELETE FROM users WHERE id = $1", id)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -107,7 +108,7 @@ func DeleteUser(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func Login(db *sql.DB) http.HandlerFunc {
+func Login(db *pgx.Conn) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		var body struct {
@@ -123,7 +124,7 @@ func Login(db *sql.DB) http.HandlerFunc {
 		}
 		var user models.User
 
-		err = db.QueryRow("SELECT email, password FROM \"users\" WHERE email=$1", body.Email).Scan(&user.Email, &user.Password)
+		err = db.QueryRow(context.Background(), "SELECT email, password FROM \"users\" WHERE email=$1", body.Email).Scan(&user.Email, &user.Password)
 
 		if err != nil {
 			log.Println("the requested email does not exist")
