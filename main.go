@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 	"user_crud_api/controllers"
@@ -10,27 +9,19 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var db *sql.DB
+// var db *sql.DB
 
 func main() {
 	initializer.LoadEnvVariable()
-	initializer.Connect()
+	var db = initializer.Connect()
+	defer db.Close()
 
 	r := mux.NewRouter()
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
+	r.HandleFunc("/create", controllers.CreateUser(db)).Methods("POST")
 	r.HandleFunc("/get", controllers.GetUsers(db)).Methods("GET")
-=======
+	r.HandleFunc("/get/{id}", controllers.GetUserById(db)).Methods("GET")
+	r.HandleFunc("/update/{id}", controllers.UpdateUser(db)).Methods("PATCH")
 	r.HandleFunc("/delete/{id}", controllers.DeleteUser(db)).Methods("DELETE")
->>>>>>> 2176df6 (delete user function added)
-=======
-	r.HandleFunc(":/8080", controllers.CreateUser(db))
->>>>>>> 7a7112f (Create User function added)
-=======
-	r.HandleFunc(":/8080", controllers.CreateUser(db))
->>>>>>> 7a7112f (Create User function added)
-
 	// user := &models.User{ID: 1, FirstName: "man", LastName: "manega", Email: "man@man", Password: "manegaga"}
 	// fmt.Println(user)
 	log.Fatal(http.ListenAndServe(":8080", r))
