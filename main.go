@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"user_crud_api/controllers"
 	initializer "user_crud_api/initializers"
+	"user_crud_api/middleware"
 
 	"github.com/gorilla/mux"
 )
@@ -17,12 +18,15 @@ func main() {
 	defer db.Close()
 
 	r := mux.NewRouter()
-	r.HandleFunc("/create", controllers.CreateUser(db)).Methods("POST")
+	r.HandleFunc("/users", controllers.CreateUser(db)).Methods("POST")
 	r.HandleFunc("/login", controllers.Login(db)).Methods("POST")
-	r.HandleFunc("/get", controllers.GetUsers(db)).Methods("GET")
-	r.HandleFunc("/get/{id}", controllers.GetUserById(db)).Methods("GET")
-	r.HandleFunc("/update/{id}", controllers.UpdateUser(db)).Methods("PATCH")
-	r.HandleFunc("/delete/{id}", controllers.DeleteUser(db)).Methods("DELETE")
+
+	api := r.PathPrefix("/").Subrouter()
+	api.Use(middleware.Authentication)
+	api.HandleFunc("/users", controllers.GetUsers(db)).Methods("GET")
+	api.HandleFunc("/user/{id}", controllers.GetUserById(db)).Methods("GET")
+	api.HandleFunc("/users/{id}", controllers.UpdateUser(db)).Methods("PATCH")
+	api.HandleFunc("/users/{id}", controllers.DeleteUser(db)).Methods("DELETE")
 	// user := &models.User{ID: 1, FirstName: "man", LastName: "manega", Email: "man@man", Password: "manegaga"}
 	// fmt.Println(user)
 	log.Fatal(http.ListenAndServe(":8080", r))
