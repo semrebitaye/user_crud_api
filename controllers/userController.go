@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"time"
 	"user_crud_api/models"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -101,5 +104,56 @@ func DeleteUser(db *sql.DB) http.HandlerFunc {
 		}
 
 		json.NewEncoder(w).Encode("User Deleted")
+	}
+}
+
+func Login(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		var body struct {
+			Email    string `json:"email"`
+			Password string `json:"password"`
+		}
+
+		err := json.NewDecoder(r.Body).Decode(&body)
+		if err != nil {
+			log.Println("failed to decode the req body")
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		var user models.User
+
+		err = db.QueryRow("SELECT email, password FROM \"users\" WHERE email=$1", body.Email).Scan(&user.Email, &user.Password)
+
+		if err != nil {
+			log.Println("the requested email does not exist")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
+
+		if err != nil {
+			log.Println("Failed to compare the password")
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		//generate a jwt tocken
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"sub": user.ID,
+			"exp": time.Now().Add(24 * time.Hour),
+		})
+
+		// Sign and get the complete encoded token as a string using the secret
+		tokenString, err := token.SignedString([]byte(os.Getenv("secret")))
+		if err != nil {
+			log.Println("Failed to get the token")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(tokenString)
 	}
 }

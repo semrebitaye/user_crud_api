@@ -18,6 +18,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/create", controllers.CreateUser(db)).Methods("POST")
+	r.HandleFunc("/login", controllers.Login(db)).Methods("POST")
 	r.HandleFunc("/get", controllers.GetUsers(db)).Methods("GET")
 	r.HandleFunc("/get/{id}", controllers.GetUserById(db)).Methods("GET")
 	r.HandleFunc("/update/{id}", controllers.UpdateUser(db)).Methods("PATCH")
