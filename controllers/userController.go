@@ -142,7 +142,7 @@ func Login(db *sql.DB) http.HandlerFunc {
 		//generate a jwt tocken
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"sub": user.ID,
-			"exp": time.Now().Add(24 * time.Hour),
+			"exp": time.Now().Add(24 * time.Hour).Unix(),
 		})
 
 		// Sign and get the complete encoded token as a string using the secret
