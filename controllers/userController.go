@@ -20,16 +20,22 @@ func CreateUser(db *pgx.Conn) http.HandlerFunc {
 		var u models.User
 		err := json.NewDecoder(r.Body).Decode(&u)
 		if err != nil {
+			log.Fatal(err)
 			w.WriteHeader(http.StatusNotFound)
+			log.Fatalf("Failed to decode the uder")
 		}
 		hash, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 		if err != nil {
+			log.Fatal(err)
 			w.WriteHeader(http.StatusNotFound)
+			log.Fatalf("Failed to hash the password")
 		}
 
 		err = db.QueryRow(context.Background(), "INSERT INTO users (first_name, last_name, email, password) VALUES ($1, $2, $3, $4) RETURNING id", u.FirstName, u.LastName, u.Email, string(hash)).Scan(&u.ID)
 		if err != nil {
+			log.Fatal(err)
 			w.WriteHeader(http.StatusNotFound)
+			log.Fatalf("Failed to get the requested id")
 		}
 
 		json.NewEncoder(w).Encode(u)
@@ -41,6 +47,8 @@ func GetUsers(db *pgx.Conn) http.HandlerFunc {
 		rows, err := db.Query(context.Background(), "SELECT * FROM users")
 		if err != nil {
 			log.Fatal(err)
+			w.WriteHeader(http.StatusNotFound)
+			log.Fatalf("Failed to get the user")
 		}
 		defer rows.Close()
 
