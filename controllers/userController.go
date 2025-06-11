@@ -37,7 +37,7 @@ func CreateUser(db *pgx.Conn) http.HandlerFunc {
 			w.WriteHeader(http.StatusNotFound)
 			log.Fatalf("Failed to get the requested id")
 		}
-
+		w.Header().Set("Conten-Type", "applicstion/json")
 		json.NewEncoder(w).Encode(u)
 	}
 }
@@ -63,7 +63,7 @@ func GetUsers(db *pgx.Conn) http.HandlerFunc {
 		if err := rows.Err(); err != nil {
 			log.Fatal(err)
 		}
-
+		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(users)
 	}
 }
@@ -81,6 +81,7 @@ func GetUserById(db *pgx.Conn) http.HandlerFunc {
 			return
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(u)
 	}
 }
@@ -98,6 +99,7 @@ func UpdateUser(db *pgx.Conn) http.HandlerFunc {
 			log.Fatal(err)
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(u)
 	}
 }
@@ -112,6 +114,7 @@ func DeleteUser(db *pgx.Conn) http.HandlerFunc {
 			log.Fatal(err)
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode("User Deleted")
 	}
 }
